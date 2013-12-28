@@ -1,5 +1,3 @@
-package chat;
-
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -7,15 +5,18 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class ChatClient {
+	JFrame f;
 	JTextArea incoming;
-	JTextField outgoing;
+	JTextField outgoing, field;
+	JLabel label;
 	BufferedReader reader;
 	PrintWriter writer;
 	FileWriter logger;
 	Socket sock;
 	String ip;
 	String nick;
-	
+	boolean flag = true, flag2 = true;
+
 	public void setUpNetworking() {
 		try {
 			sock = new Socket(ip, 5000);
@@ -59,6 +60,7 @@ public class ChatClient {
 			}
 		}	
 	}
+
 	public void go() {
 		JFrame frame = new JFrame("Chat Client");
 		JPanel mainPanel = new JPanel();
@@ -128,14 +130,69 @@ public class ChatClient {
 		return nick;
 	}
 	
-	public void SetNick(String n) {
+	public void setNick(String n) {
 		nick = n;
+	}
+
+	public void setDetails() {
+		f = new JFrame("Enter your details");
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		label = new JLabel("Enter your name:");
+		field = new JTextField();
+		field.addKeyListener(new FieldListener());
+
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.add(label);
+		panel.add(field);
+
+		f.getContentPane().add(panel);
+		f.setSize(200, 100);
+		f.setLocationRelativeTo(null);
+		f.setResizable(false);
+		f.setVisible(true);
+		field.requestFocus();
+	}
+
+	public class FieldListener implements KeyListener {
+		public void keyTyped(KeyEvent ev) {
+			if(ev.getKeyChar() == '\n') {
+				if(flag) {
+					setNick(field.getText());
+					flag = false;
+					label.setText("Enter IP:");
+					field.setText("    .    .    .    ");
+					field.selectAll();
+					field.requestFocus();
+				}
+
+				else {
+					setIP(field.getText());
+					f.dispose();
+
+					flag2 = false;
+				}
+			}
+		}
+
+		public void keyPressed(KeyEvent ev) {}
+
+		public void keyReleased(KeyEvent ev) {}
 	}
 	
 	public static void main(String [] args) {
 		ChatClient client = new ChatClient();
-		client.setIP(args[0]);
-		client.SetNick(args[1]);
+
+		client.setDetails();
+
+		try {
+			while(client.flag2)
+				Thread.sleep(1);
+		} catch(Exception ex) {}
+
+//		client.setIP(args[0]);
+//		client.SetNick(args[1]);
 		client.go();
 	}
 }
